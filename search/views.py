@@ -1,13 +1,17 @@
 import json
 from datetime import datetime
 
+import redis
 from django.shortcuts import render
 from django.views.generic.base import View
 from django.http import HttpResponse
 from search.models import JobboleEsModel, ZhihuAnswerEsModel, ZhihuQuestionEsModel, LagouEsModel
 from elasticsearch import Elasticsearch
 
+# elasticsearch
 client = Elasticsearch(hosts=['localhost'])
+# redis
+redis_cli = redis.StrictRedis()
 
 
 class SuggestView(View):
@@ -80,9 +84,13 @@ class SearchView(View):
         if page % 10 > 0:
             page_nums += 1
 
+        # 爬取量总计
+        jobbole_count = redis_cli.get('jobbole_count')
+
         return render(request, 'result.html', {'page': page,
                                                'all_hits': all_hits,
                                                'key_words': keywords,
                                                'total_nums': total_nums,
                                                'page_nums': page_nums,
-                                               'last_seconds': (end_time - start_time).total_seconds()})
+                                               'last_seconds': (end_time - start_time).total_seconds(),
+                                               'jobbole_count': jobbole_count})

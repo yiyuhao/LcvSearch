@@ -38,17 +38,15 @@
             <div class="historyArea">
                 <p class="history">
                     <label>热门搜索：</label>
-
+                    {% for hotword in hot_keywords %}
+                        <a href="/search?q={{ hotword }}">{{ hotword }}</a>
+                    {% endfor %}
                 </p>
                 <p class="history mysearch">
                     <label>我的搜索：</label>
                     <span class="all-search">
-                        <a href="javascript:;">专注界面设计网站</a>
-                        <a href="javascript:;">用户体验</a>
-                        <a href="javascript:;">互联网</a>
                         <a href="javascript:;">资费套餐</a>
                     </span>
-
                 </p>
             </div>
         </div><!-- End of main -->
@@ -81,7 +79,6 @@
             }
         }
     }
-
 
     // 搜索建议
     $(function () {

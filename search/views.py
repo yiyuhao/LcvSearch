@@ -14,6 +14,15 @@ client = Elasticsearch(hosts=['localhost'])
 redis_cli = redis.StrictRedis()
 
 
+class IndexView(View):
+    """首页"""
+
+    def get(self, request):
+        # 获取搜索关键词top10
+        hot_keywords = redis_cli.zrevrangebyscore('search_keywords_set', '+inf', '-inf', start=0, num=5)
+        return render(request, 'index.html', {'hot_keywords': hot_keywords})
+
+
 class SuggestView(View):
     """生成搜索建议并返回ajax响应"""
 
@@ -87,10 +96,16 @@ class SearchView(View):
         # 爬取量总计
         jobbole_count = redis_cli.get('jobbole_count')
 
+        # redis 搜索关键词统计
+        redis_cli.zincrby('search_keywords_set', keywords)
+        # 获取搜索关键词top10
+        hot_keywords = redis_cli.zrevrangebyscore('search_keywords_set', '+inf', '-inf', start=0, num=5)
+
         return render(request, 'result.html', {'page': page,
                                                'all_hits': all_hits,
                                                'key_words': keywords,
                                                'total_nums': total_nums,
                                                'page_nums': page_nums,
                                                'last_seconds': (end_time - start_time).total_seconds(),
-                                               'jobbole_count': jobbole_count})
+                                               'jobbole_count': jobbole_count,
+                                               'hot_keywords': hot_keywords})

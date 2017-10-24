@@ -109,16 +109,14 @@
                 <div class="hotSearch">
                     <h6>热门搜索</h6>
                     <ul class="historyList">
-
-                        <li><a href="/search?q=linux">linux</a></li>
-
+                        {% for hotword in hot_keywords %}
+                            <li><a href="/search?q={{ hotword }}">{{ hotword }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
                 <div class="mySearch">
                     <h6>我的搜索</h6>
-                    <ul class="historyList">
-
-                    </ul>
+                    <ul class="historyList"></ul>
                 </div>
             </div>
         </div><!-- End of main -->

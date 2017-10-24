@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.shortcuts import render
 from django.views.generic.base import View
@@ -33,7 +34,16 @@ class SearchView(View):
     """搜索"""
 
     def get(self, request):
+        # page
+        page = request.GET.get('p', '1')
+        try:
+            page = int(page)
+        except:
+            page = 1
+
+        # search
         keywords = request.GET.get('q', '')
+        start_time = datetime.now()
         response = client.search(
             index='jobbole',
             body={
@@ -41,7 +51,7 @@ class SearchView(View):
                     "multi_match": {
                         "query": keywords,
                         "fields": ["tags", "title", "content"]}},
-                "from": 0,
+                "from": (page - 1) * 10,
                 "size": 10,
                 "highlight": {
                     "pre_tags": ['<span class="keyWord">'],
@@ -49,8 +59,9 @@ class SearchView(View):
                     "fields": {
                         "title": {},
                         "content": {}}}})
-
+        end_time = datetime.now()
         total_nums = response['hits']['total']
+        # 搜索结果
         all_hits = []
         for hit in response['hits']['hits']:
             one_hit = dict()
@@ -64,4 +75,14 @@ class SearchView(View):
             one_hit['score'] = hit['_score']
             all_hits.append(one_hit)
 
-        return render(request, 'result.html', {'all_hits': all_hits, 'key_words': keywords})
+        # page_nums 总页数
+        page_nums = int(total_nums / 10)
+        if page % 10 > 0:
+            page_nums += 1
+
+        return render(request, 'result.html', {'page': page,
+                                               'all_hits': all_hits,
+                                               'key_words': keywords,
+                                               'total_nums': total_nums,
+                                               'page_nums': page_nums,
+                                               'last_seconds': (end_time - start_time).total_seconds()})
